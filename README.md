@@ -1,70 +1,43 @@
-# Layered Pipeline
+# Grabyo technical test
 
-# Overview 
-Stratum is a mono-repo that contains layers, kits and automation scripts of layers. A layer is a logical grouping of resources that take into consideration:
+At Grabyo we love board games and will have an occasional poker night.
+Since no one remembers the card ranking you will have to write a program that
+compare poker hands and determines a winner.
 
-- Layer can be as simple as single resource type and it can also be grouping of different layers to compose your own custom layer
-- Segregation of resource provisioning per layer allows RBAC per different units aka separation of responsibilities
-- Service Contract aka output/input between layers initialize variables during deployment
-- Layers encourages separation of state file based on resource life cycle. That adds flexibility during troubleshooting, now you can focus on one layer at a time.
-Pipeline is flexible enouph to allow rerun specific layer as many times as needed to be.
-- Variables are scoped per layers in $env-variables.tf file
+## 1. Requirements
 
-# Prerequisite
+A poker hand has a constructor that accepts a string containing 5 cards: 
 
-- ADO agent needs to be deployed using [att-onboarding-devops-services
-](https://dev.azure.com/ATTDevOps/ATT%20Cloud/_git/att-onboarding-devops-services
-)
-- Provide Contributor role to *ado VMSS* to storage account where TF state file need to be saved 
-
-- Verify terraform and unzip binaries installed in ado agent VMSS
-- Create service Connection for ado agent to connect to Azure portal using [Service Principal Doc
-](https://dev.azure.com/ATTDevOps/ATT%20Cloud/_wiki/wikis/Optimization%20Wiki/1106/ADO-Service-Principal-Creation-and-Permissions-Guide
-)
-- Create ADO agent pool [Click here](https://dev.azure.com/ATTDevOps/ATT%20Cloud/_wiki/wikis/ATT-Cloud.wiki/670/Create-Azure-Self-Hosted-Build-Agent-(Deprecated))
-
-# How to deploy new Enviornmet!
-
-  - Create a new branch from master
-  - Change **environment: dev** in */kits/jumpstart-vm/Pipelines/Pipeline.<env>.yaml* to **environment: <env>** **if required**
-  - Change */kits/jumpstart-vm/Pipelines/Varibale.<env>.yaml* and */kits/jumpstart-vm/Pipelines/Variable.yaml* **if required**
-  - Change the **name** field in all the *var-<layer>.auto.tfvars* files present here */kits/jumpstart-vm/Layers/<env>/var-<layer>.auto.tfvars*
-  - If you want to deploy VM make sure your **vm-name** should be same as local variable name decalared in *var-virtualmachine.tf*
-   ```
-**/kits/jumpstart-vm/Layers/<env>/var-virtualmachine.tf**
-locals {
-  linux_image_ids = {
-    "ABCD-VM1"  = "XXXXXXX(Resource ID of shared image version"
-    "ABCD-VM2"  = "XXXXXXX(Resource ID of shared image version"
-  }
-}
-```
-```
-**/kits/jumpstart-vm/Layers/<env>/var-virtualmachine.auto.tfvars**
-linux_vms = {
-  vm1 = {
-    name                             = "ABCD-VM1"
-    vm_size                          = "Standard_DS1_v2"
-    assign_identity                  = true
-    avaialability_set_key            = null
-    .
-    .
-    .
-    },
-vm2 = {
-    name                             = "ABCD-VM2"
-    vm_size                          = "Standard_DS1_v2"
-    assign_identity                  = true
-    avaialability_set_key            = null
-    .
-    .
-    .
-    }
-}
+```python
+hand = PokerHand("KS 2H 5C JD TD");
 ```
 
-# Note:-
-- If you want to create PE of any resource make sure it has tag **pe_enable = true**
-- **[error]No agents were found in pool <agent pool name> Configure an agent for the pool and try again** that means agent is not registered in agent pool.Create ADO agent pool [Click here](https://dev.azure.com/ATTDevOps/ATT%20Cloud/_wiki/wikis/ATT-Cloud.wiki/670/Create-Azure-Self-Hosted-Build-Agent-(Deprecated))
-- **[error]error loading the remote state: Error retrieving keys for Storage Account....** . ADO agent VM is not able to access storage account to download the tfstate file.Provide Contributor access to ado agent VMSS to storage account where you are storing your TFstate file
-- If your pipeline is suceesfull but your resources are not deployed make sure **skip: false** under *stages* section is uncommented in Pipeline.<env>.yaml
+and a method to compare itself to another hand
+
+```python
+def compare_with(self, opponent):
+    # Your code here
+    return 0
+```
+
+The characteristics of the string of cards are:
+*   A space is used as card seperator
+*   Each card consists of two characters
+*   The first character is the value of the card, valid characters are: `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `T`(en), `J`(ack), `Q`(ueen), `K`(ing), `A`(ce)
+*   The second character represents the suit, valid characters are: `S`(pades), `H`(earts), `D`(iamonds), `C`(lubs)
+
+The result of your poker hand compare can be one of the 3 options:
+* 0 for a TIE
+* 1 for a WIN
+* 2 for a LOSS
+
+The ranking of the hands should follow the [Texas Hold'em rules](http://www.wsop.com/how-to-play-poker/images/how-to-ranking.jpg)
+
+You are free to architect your code the way you want: adding classes, enums or constants as long as you stick to the `compare_with` method signature and `PokerHand` specification given in the sample. You can use any libraries that you feel are relevant to solve this problem.
+
+## 2. Tests
+
+Sample unit tests have been included in the code skeleton. You can run them as a script: `python tests.py`. Writing more tests is welcome :)
+
+
+Good luck ;)
