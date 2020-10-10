@@ -1,0 +1,1509 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ALB_TG.template - Elastic Load Balancer v2 (Target Group) template.",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Parameters": [
+            "Listener1Arn",
+            "Listener2Arn",
+            "LoadBalancerName",
+            "TargetGroupNameVersion",
+            "VPCID"
+          ],
+          "Label": {
+            "default": [
+              "Application Load Balancer General Configuration"
+            ]
+          }
+        },
+        {
+          "Parameters": [
+            "MatcherCode",
+            "TargetGroupName"
+          ],
+          "Label": {
+            "default": [
+              "Target Group Main Configuration"
+            ]
+          }
+        },
+        {
+          "Parameters": [
+            "AttributeDelayTimeout",
+            "AttributeStickinessEnabled",
+            "CookieDuration",
+            "TargetGroupPort",
+            "TargetGroupProtocol"
+          ],
+          "Label": {
+            "default": [
+              "Target Group General Configuration"
+            ]
+          }
+        },
+        {
+          "Parameters": [
+            "HealthCheckIntervalSeconds",
+            "HealthCheckPath",
+            "HealthCheckPort",
+            "HealthCheckProtocol",
+            "HealthCheckTimeoutSeconds",
+            "HealthyThresholdCount",
+            "UnhealthyThresholdCount"
+          ],
+          "Label": {
+            "default": [
+              "Target Group Health Monitoring Configuration"
+            ]
+          }
+        },
+        {
+          "Parameters": [
+            "TargetGroupTargetId1",
+            "TargetGroupTargetId2",
+            "TargetGroupTargetId3",
+            "TargetGroupTargetPort1",
+            "TargetGroupTargetPort2",
+            "TargetGroupTargetPort3"
+          ],
+          "Label": {
+            "default": [
+              "Target Group Instance Target Configuration (OPTIONAL)"
+            ]
+          }
+        },
+        {
+          "Parameters": [
+            "ListenerRule1HostHeader",
+            "ListenerRule1Path",
+            "ListenerRule1Priority"
+          ],
+          "Label": {
+            "default": "Listener Rule 1 Configuration (OPTIONAL)"
+          }
+        },
+        {
+          "Parameters": [
+            "ListenerRule2HostHeader",
+            "ListenerRule2Path",
+            "ListenerRule2Priority"
+          ],
+          "Label": {
+            "default": "Listener Rule 2 Configuration (OPTIONAL)"
+          }
+        },
+        {
+          "Parameters": [
+            "ListenerRule3HostHeader",
+            "ListenerRule3Path",
+            "ListenerRule3Priority"
+          ],
+          "Label": {
+            "default": "Listener Rule 3 Configuration (OPTIONAL)"
+          }
+        },
+        {
+          "Parameters": [
+            "ListenerRule4HostHeader",
+            "ListenerRule4Path",
+            "ListenerRule4Priority"
+          ],
+          "Label": {
+            "default": "Listener Rule 4 Configuration (OPTIONAL)"
+          }
+        },
+        {
+          "Parameters": [
+            "Environment"
+          ],
+          "Label": {
+            "default": "Basic Configuration"
+          }
+        },
+        {
+          "Parameters": [
+            "EnableRackspaceTicket"
+          ],
+          "Label": {
+            "default": "Monitoring Configuration"
+          }
+        }
+      ],
+      "ParameterLabels": {
+        "VPCID": {
+          "default": "VPC id"
+        },
+        "TargetGroupPort": {
+          "default": "Target Group port"
+        },
+        "HealthyThresholdCount": {
+          "default": "Healthy threshold count"
+        },
+        "CookieDuration": {
+          "default": "Cookie duration"
+        },
+        "HealthCheckPort": {
+          "default": "Health check port"
+        },
+        "TargetGroupProtocol": {
+          "default": "Target Group protocol"
+        },
+        "HealthCheckPath": {
+          "default": "Health check path"
+        },
+        "TargetGroupTargetId1": {
+          "default": "Instance target 1"
+        },
+        "TargetGroupTargetId2": {
+          "default": "Instance target 2"
+        },
+        "TargetGroupTargetId3": {
+          "default": "Instance target 3"
+        },
+        "HealthCheckIntervalSeconds": {
+          "default": "Health check interval"
+        },
+        "AttributeDelayTimeout": {
+          "default": "Deregistration delay"
+        },
+        "MatcherCode": {
+          "default": "Target Group match code"
+        },
+        "HealthCheckProtocol": {
+          "default": "Health check protocol"
+        },
+        "HealthCheckTimeoutSeconds": {
+          "default": "Health check timeout"
+        },
+        "AttributeStickinessEnabled": {
+          "default": "Stickiness enabled"
+        },
+        "UnhealthyThresholdCount": {
+          "default": "Unhealthy threshold count"
+        },
+        "TargetGroupName": {
+          "default": "Target Group name"
+        },
+        "LoadBalancerName": {
+          "default": "Load balancer Fullname"
+        },
+        "TargetGroupTargetPort1": {
+          "default": "Instance target 1 port"
+        },
+        "TargetGroupTargetPort2": {
+          "default": "Instance target 2 port"
+        },
+        "TargetGroupTargetPort3": {
+          "default": "Instance target 3 port"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "VPCID": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "The VPC in which your targets are located."
+    },
+    "ListenerRule1HostHeader": {
+      "Default": "*",
+      "Type": "String",
+      "Description": "A single host header for Listener Rule 1.  Up to 3 wildcard characters are allowed.",
+      "MaxLength": 128
+    },
+    "TargetGroupPort": {
+      "Default": "80",
+      "MinValue": "1",
+      "Type": "Number",
+      "Description": "The port on which the targets receive traffic.",
+      "MaxValue": "65535"
+    },
+    "HealthyThresholdCount": {
+      "Default": "5",
+      "MinValue": "2",
+      "Type": "Number",
+      "Description": "The number of consecutive successful health checks that are required before an unhealthy target is considered healthy.",
+      "MaxValue": "10"
+    },
+    "AttributeDelayTimeout": {
+      "Default": "30",
+      "MinValue": "0",
+      "Type": "Number",
+      "Description": "The amount time for Elastic Load Balancing to wait before changing the state of a deregistering target from draining to unused.",
+      "MaxValue": "3600"
+    },
+    "ListenerRule2Priority": {
+      "Default": "20",
+      "Type": "String",
+      "Description": "The priority to use for this rule."
+    },
+    "EnableRackspaceTicket": {
+      "Default": "False",
+      "Type": "String",
+      "Description": "Specifies whether alarms will generate Rackspace tickets",
+      "AllowedValues": [
+        "False",
+        "True"
+      ]
+    },
+    "CookieDuration": {
+      "Default": "86400",
+      "MinValue": "1",
+      "Type": "Number",
+      "Description": "The time period, in seconds, during which requests from a client should be routed to the same target.",
+      "MaxValue": "604800"
+    },
+    "HealthCheckPort": {
+      "AllowedPattern": "^traffic-port$||^[0-9]+$",
+      "Default": "traffic-port",
+      "Type": "String",
+      "Description": "The port the load balancer uses when performing health checks on targets. The default is traffic-port, which is the port on which each target receives traffic from the load balancer.",
+      "ConstraintDescription": "Must be a valid TCP port or the value \"traffic-port\""
+    },
+    "ListenerRule4Path": {
+      "Default": "",
+      "Type": "String",
+      "Description": "A single URI path for Listener Rule 4.  Up to 3 wildcard characters are allowed.",
+      "MaxLength": 128
+    },
+    "TargetGroupProtocol": {
+      "Default": "HTTP",
+      "Type": "String",
+      "Description": "The protocol to use for routing traffic to the targets.",
+      "AllowedValues": [
+        "HTTP",
+        "HTTPS"
+      ]
+    },
+    "HealthCheckPath": {
+      "Description": "The ping path destination where Elastic Load Balancing sends health check requests.",
+      "Default": "/",
+      "ConstraintDescription": "Must begin with a '/' character, and can be at most 1024 characters in length.",
+      "AllowedPattern": "^/.*$",
+      "MaxLength": "1024",
+      "Type": "String"
+    },
+    "ListenerRule2Path": {
+      "Default": "",
+      "Type": "String",
+      "Description": "A single URI path for Listener Rule 2.  Up to 3 wildcard characters are allowed.",
+      "MaxLength": 128
+    },
+    "TargetGroupTargetId1": {
+      "AllowedPattern": "^i-[0-9a-f]{8}$||^i-[0-9a-f]{17}$||^$",
+      "Default": "",
+      "Type": "String",
+      "Description": "The ID of the target, such as an EC2 instance ID.",
+      "ConstraintDescription": "Must be a valid EC2 instance ID"
+    },
+    "TargetGroupTargetId2": {
+      "AllowedPattern": "^i-[0-9a-f]{8}$||^i-[0-9a-f]{17}$||^$",
+      "Default": "",
+      "Type": "String",
+      "Description": "The ID of the target, such as an EC2 instance ID.",
+      "ConstraintDescription": "Must be a valid EC2 instance ID"
+    },
+    "TargetGroupTargetId3": {
+      "AllowedPattern": "^i-[0-9a-f]{8}$||^i-[0-9a-f]{17}$||^$",
+      "Default": "",
+      "Type": "String",
+      "Description": "The ID of the target, such as an EC2 instance ID.",
+      "ConstraintDescription": "Must be a valid EC2 instance ID"
+    },
+    "TargetGroupNameVersion": {
+      "Default": "v00",
+      "Type": "String",
+      "Description": "NOTE: This needs to increment on update with new Target Group."
+    },
+    "HealthCheckIntervalSeconds": {
+      "Default": "30",
+      "MinValue": "5",
+      "Type": "Number",
+      "Description": "The approximate number of seconds between health checks for an individual target.",
+      "MaxValue": "300"
+    },
+    "ListenerRule1Path": {
+      "Default": "",
+      "Type": "String",
+      "Description": "A single URI path for Listener Rule 1.  Up to 3 wildcard characters are allowed.",
+      "MaxLength": 128
+    },
+    "MatcherCode": {
+      "AllowedPattern": "^([2-4][0-9]{2}[,\\-])*[2-4][0-9]{2}$",
+      "Default": "200-299",
+      "Type": "String",
+      "Description": "The HTTP codes. The default value is 200.",
+      "ConstraintDescription": "The HTTP codes between 200 and to use when checking for a successful response from a target. You can specify multiple values (for example, \"200,202\") or a range of values (for example, \"200-299\")."
+    },
+    "HealthCheckProtocol": {
+      "Default": "HTTP",
+      "Type": "String",
+      "Description": "The protocol that the load balancer uses when performing health checks on the targets, such as HTTP or HTTPS.",
+      "AllowedValues": [
+        "HTTP",
+        "HTTPS"
+      ]
+    },
+    "ListenerRule4Priority": {
+      "Default": "40",
+      "Type": "String",
+      "Description": "The priority to use for this rule."
+    },
+    "ListenerRule2HostHeader": {
+      "Default": "*",
+      "Type": "String",
+      "Description": "A single host header for Listener Rule 2.  Up to 3 wildcard characters are allowed.",
+      "MaxLength": 128
+    },
+    "HealthCheckTimeoutSeconds": {
+      "Default": "5",
+      "MinValue": "2",
+      "Type": "Number",
+      "Description": "The number of seconds to wait for a response before considering that a health check has failed.",
+      "MaxValue": "60"
+    },
+    "AttributeStickinessEnabled": {
+      "Default": "false",
+      "ConstraintDescription": "Value must be either lowercase true or false.",
+      "Type": "String",
+      "Description": "Indicates whether sticky sessions are enabled.",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "ListenerRule1Priority": {
+      "Default": "10",
+      "Type": "String",
+      "Description": "The priority to use for this rule."
+    },
+    "ListenerRule3Path": {
+      "Default": "",
+      "Type": "String",
+      "Description": "A single URI path for Listener Rule 3.  Up to 3 wildcard characters are allowed.",
+      "MaxLength": 128
+    },
+    "ListenerRule3Priority": {
+      "Default": "30",
+      "Type": "String",
+      "Description": "The priority to use for this rule."
+    },
+    "UnhealthyThresholdCount": {
+      "Default": "2",
+      "MinValue": "2",
+      "Type": "Number",
+      "Description": "The number of consecutive failed health checks that are required before a target is considered unhealthy.",
+      "MaxValue": "10"
+    },
+    "ListenerRule4HostHeader": {
+      "Default": "*",
+      "Type": "String",
+      "Description": "A single host header for Listener Rule 4.  Up to 3 wildcard characters are allowed.",
+      "MaxLength": 128
+    },
+    "Environment": {
+      "Default": "Development",
+      "Type": "String",
+      "Description": "Application environment for which this network is being created. e.g. Development/Production.",
+      "AllowedValues": [
+        "Development",
+        "Integration",
+        "PreProduction",
+        "Production",
+        "QA",
+        "Staging",
+        "Test"
+      ]
+    },
+    "Listener1Arn": {
+      "AllowedPattern": "^arn:aws:elasticloadbalancing:(us|eu|ap|sa|ca)-(east|west|north|south|southeast|northeast|central)-[1-9]:[0-9]{12}:listener/app/.+/[0-9a-z\\-]+/[0-9a-z\\-]+$||^$",
+      "Default": "",
+      "Type": "String",
+      "Description": "ARN of the first ALB listener. (OPTIONAL)",
+      "ConstraintDescription": "Must be a valid ALB Listener ARN."
+    },
+    "ListenerRule3HostHeader": {
+      "Default": "*",
+      "Type": "String",
+      "Description": "A single host header for Listener Rule 3.  Up to 3 wildcard characters are allowed.",
+      "MaxLength": 128
+    },
+    "TargetGroupName": {
+      "Default": "ALB-TargetGroup",
+      "AllowedPattern": "^([a-zA-Z0-9]+-?)*[a-zA-Z0-9]$",
+      "Type": "String",
+      "Description": "A name for the Target Group.",
+      "ConstraintDescription": "Must contain only alphanumeric characters or hyphens.  Value must not begin or end with a hyphen or have two adjacent hypens ."
+    },
+    "LoadBalancerName": {
+      "AllowedPattern": "^app/.+/.+$",
+      "ConstraintDescription": "Must be a valid ALB LoadBalancerFullName value.",
+      "Type": "String",
+      "Description": "The Full Name of the application load balancer in the format 'app/<lb_name>/<lb_id>'.  Value can be retrieved from the ALB stack outputs."
+    },
+    "Listener2Arn": {
+      "AllowedPattern": "^arn:aws:elasticloadbalancing:(us|eu|ap|sa|ca)-(east|west|north|south|southeast|northeast|central)-[1-9]:[0-9]{12}:listener/app/.+/[0-9a-z\\-]+/[0-9a-z\\-]+$||^$",
+      "Default": "",
+      "Type": "String",
+      "Description": "ARN of the second ALB listener. (OPTIONAL)",
+      "ConstraintDescription": "Must be a valid ALB Listener ARN."
+    },
+    "TargetGroupTargetPort1": {
+      "Default": "80",
+      "MinValue": "1",
+      "Type": "Number",
+      "Description": "The port number on which the target is listening for traffic.",
+      "MaxValue": "65535"
+    },
+    "TargetGroupTargetPort2": {
+      "Default": "80",
+      "MinValue": "1",
+      "Type": "Number",
+      "Description": "The port number on which the target is listening for traffic.",
+      "MaxValue": "65535"
+    },
+    "TargetGroupTargetPort3": {
+      "Default": "80",
+      "MinValue": "1",
+      "Type": "Number",
+      "Description": "The port number on which the target is listening for traffic.",
+      "MaxValue": "65535"
+    }
+  },
+  "Conditions": {
+    "UseListener2Rule3": {
+      "Fn::And": [
+        {
+          "Fn::Or": [
+            {
+              "Condition": "SetListenerRule3Path"
+            },
+            {
+              "Condition": "SetListenerRule3Host"
+            }
+          ]
+        },
+        {
+          "Condition": "UseListener2"
+        }
+      ]
+    },
+    "UseListener2Rule4": {
+      "Fn::And": [
+        {
+          "Fn::Or": [
+            {
+              "Condition": "SetListenerRule4Path"
+            },
+            {
+              "Condition": "SetListenerRule4Host"
+            }
+          ]
+        },
+        {
+          "Condition": "UseListener2"
+        }
+      ]
+    },
+    "UseListener2Rule1": {
+      "Fn::And": [
+        {
+          "Fn::Or": [
+            {
+              "Condition": "SetListenerRule1Path"
+            },
+            {
+              "Condition": "SetListenerRule1Host"
+            }
+          ]
+        },
+        {
+          "Condition": "UseListener2"
+        }
+      ]
+    },
+    "UseListener2Rule2": {
+      "Fn::And": [
+        {
+          "Fn::Or": [
+            {
+              "Condition": "SetListenerRule2Path"
+            },
+            {
+              "Condition": "SetListenerRule2Host"
+            }
+          ]
+        },
+        {
+          "Condition": "UseListener2"
+        }
+      ]
+    },
+    "SetListenerRule3Host": {
+      "Fn::Not": [
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "ListenerRule3HostHeader"
+                },
+                "*"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "ListenerRule3HostHeader"
+                },
+                ""
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "UseTGNameVersion": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "TargetGroupNameVersion"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "SetListenerRule4Host": {
+      "Fn::Not": [
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "ListenerRule4HostHeader"
+                },
+                "*"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "ListenerRule4HostHeader"
+                },
+                ""
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "UseListener1Rule1": {
+      "Fn::And": [
+        {
+          "Fn::Or": [
+            {
+              "Condition": "SetListenerRule1Path"
+            },
+            {
+              "Condition": "SetListenerRule1Host"
+            }
+          ]
+        },
+        {
+          "Condition": "UseListener1"
+        }
+      ]
+    },
+    "UseListener1Rule3": {
+      "Fn::And": [
+        {
+          "Fn::Or": [
+            {
+              "Condition": "SetListenerRule3Path"
+            },
+            {
+              "Condition": "SetListenerRule3Host"
+            }
+          ]
+        },
+        {
+          "Condition": "UseListener1"
+        }
+      ]
+    },
+    "UseListener1Rule2": {
+      "Fn::And": [
+        {
+          "Fn::Or": [
+            {
+              "Condition": "SetListenerRule2Path"
+            },
+            {
+              "Condition": "SetListenerRule2Host"
+            }
+          ]
+        },
+        {
+          "Condition": "UseListener1"
+        }
+      ]
+    },
+    "UseListener1Rule4": {
+      "Fn::And": [
+        {
+          "Fn::Or": [
+            {
+              "Condition": "SetListenerRule4Path"
+            },
+            {
+              "Condition": "SetListenerRule4Host"
+            }
+          ]
+        },
+        {
+          "Condition": "UseListener1"
+        }
+      ]
+    },
+    "UseTarget2": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "TargetGroupTargetId2"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "UseTarget3": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "TargetGroupTargetId3"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "SetListenerRule4Path": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "ListenerRule4Path"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "SetListenerRule2Host": {
+      "Fn::Not": [
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "ListenerRule2HostHeader"
+                },
+                "*"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "ListenerRule2HostHeader"
+                },
+                ""
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "SetListenerRule1Host": {
+      "Fn::Not": [
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "ListenerRule1HostHeader"
+                },
+                "*"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "ListenerRule1HostHeader"
+                },
+                ""
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "UseListener2": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "Listener2Arn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "UseListener1": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "Listener1Arn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "SetListenerRule3Path": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "ListenerRule3Path"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "SetListenerRule2Path": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "ListenerRule2Path"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "RackspaceAlarmsEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnableRackspaceTicket"
+        },
+        "True"
+      ]
+    },
+    "SetListenerRule1Path": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "ListenerRule1Path"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "UseTarget1": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "TargetGroupTargetId1"
+            },
+            ""
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "Listener2Rule4": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Priority": {
+          "Ref": "ListenerRule4Priority"
+        },
+        "Conditions": [
+          {
+            "Fn::If": [
+              "SetListenerRule4Path",
+              {
+                "Field": "path-pattern",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule4Path"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "SetListenerRule4Host",
+              {
+                "Field": "host-header",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule4HostHeader"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "ListenerArn": {
+          "Ref": "Listener2Arn"
+        },
+        "Actions": [
+          {
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            },
+            "Type": "forward"
+          }
+        ]
+      },
+      "Condition": "UseListener2Rule4"
+    },
+    "Listener2Rule2": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Priority": {
+          "Ref": "ListenerRule2Priority"
+        },
+        "Conditions": [
+          {
+            "Fn::If": [
+              "SetListenerRule2Path",
+              {
+                "Field": "path-pattern",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule2Path"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "SetListenerRule2Host",
+              {
+                "Field": "host-header",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule2HostHeader"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "ListenerArn": {
+          "Ref": "Listener2Arn"
+        },
+        "Actions": [
+          {
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            },
+            "Type": "forward"
+          }
+        ]
+      },
+      "Condition": "UseListener2Rule2"
+    },
+    "Listener2Rule3": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Priority": {
+          "Ref": "ListenerRule3Priority"
+        },
+        "Conditions": [
+          {
+            "Fn::If": [
+              "SetListenerRule3Path",
+              {
+                "Field": "path-pattern",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule3Path"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "SetListenerRule3Host",
+              {
+                "Field": "host-header",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule3HostHeader"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "ListenerArn": {
+          "Ref": "Listener2Arn"
+        },
+        "Actions": [
+          {
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            },
+            "Type": "forward"
+          }
+        ]
+      },
+      "Condition": "UseListener2Rule3"
+    },
+    "Listener2Rule1": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Priority": {
+          "Ref": "ListenerRule1Priority"
+        },
+        "Conditions": [
+          {
+            "Fn::If": [
+              "SetListenerRule1Path",
+              {
+                "Field": "path-pattern",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule1Path"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "SetListenerRule1Host",
+              {
+                "Field": "host-header",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule1HostHeader"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "ListenerArn": {
+          "Ref": "Listener2Arn"
+        },
+        "Actions": [
+          {
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            },
+            "Type": "forward"
+          }
+        ]
+      },
+      "Condition": "UseListener2Rule1"
+    },
+    "Listener1Rule3": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Priority": {
+          "Ref": "ListenerRule3Priority"
+        },
+        "Conditions": [
+          {
+            "Fn::If": [
+              "SetListenerRule3Path",
+              {
+                "Field": "path-pattern",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule3Path"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "SetListenerRule3Host",
+              {
+                "Field": "host-header",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule3HostHeader"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "ListenerArn": {
+          "Ref": "Listener1Arn"
+        },
+        "Actions": [
+          {
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            },
+            "Type": "forward"
+          }
+        ]
+      },
+      "Condition": "UseListener1Rule3"
+    },
+    "Listener1Rule2": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Priority": {
+          "Ref": "ListenerRule2Priority"
+        },
+        "Conditions": [
+          {
+            "Fn::If": [
+              "SetListenerRule2Path",
+              {
+                "Field": "path-pattern",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule2Path"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "SetListenerRule2Host",
+              {
+                "Field": "host-header",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule2HostHeader"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "ListenerArn": {
+          "Ref": "Listener1Arn"
+        },
+        "Actions": [
+          {
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            },
+            "Type": "forward"
+          }
+        ]
+      },
+      "Condition": "UseListener1Rule2"
+    },
+    "Listener1Rule1": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Priority": {
+          "Ref": "ListenerRule1Priority"
+        },
+        "Conditions": [
+          {
+            "Fn::If": [
+              "SetListenerRule1Path",
+              {
+                "Field": "path-pattern",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule1Path"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "SetListenerRule1Host",
+              {
+                "Field": "host-header",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule1HostHeader"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "ListenerArn": {
+          "Ref": "Listener1Arn"
+        },
+        "Actions": [
+          {
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            },
+            "Type": "forward"
+          }
+        ]
+      },
+      "Condition": "UseListener1Rule1"
+    },
+    "Listener1Rule4": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Priority": {
+          "Ref": "ListenerRule4Priority"
+        },
+        "Conditions": [
+          {
+            "Fn::If": [
+              "SetListenerRule4Path",
+              {
+                "Field": "path-pattern",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule4Path"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "SetListenerRule4Host",
+              {
+                "Field": "host-header",
+                "Values": [
+                  {
+                    "Ref": "ListenerRule4HostHeader"
+                  }
+                ]
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "ListenerArn": {
+          "Ref": "Listener1Arn"
+        },
+        "Actions": [
+          {
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            },
+            "Type": "forward"
+          }
+        ]
+      },
+      "Condition": "UseListener1Rule4"
+    },
+    "UnHealthyHostCountAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "EvaluationPeriods": "10",
+        "Dimensions": [
+          {
+            "Name": "LoadBalancer",
+            "Value": {
+              "Ref": "LoadBalancerName"
+            }
+          },
+          {
+            "Name": "TargetGroup",
+            "Value": {
+              "Fn::GetAtt": [
+                "TargetGroup",
+                "TargetGroupFullName"
+              ]
+            }
+          }
+        ],
+        "AlarmActions": [
+          {
+            "Fn::If": [
+              "RackspaceAlarmsEnabled",
+              {
+                "Fn::Sub": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:rackspace-support-emergency"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "AlarmDescription": "Unhealthy Host count is greater than or equal to threshold, creating ticket.",
+        "Namespace": "AWS/ApplicationELB",
+        "Period": "60",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Statistic": "Maximum",
+        "Threshold": "1",
+        "OKActions": [
+          {
+            "Fn::If": [
+              "RackspaceAlarmsEnabled",
+              {
+                "Fn::Sub": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:rackspace-support-emergency"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "Unit": "Count",
+        "MetricName": "UnHealthyHostCount"
+      }
+    },
+    "TargetGroup": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "HealthyThresholdCount": {
+          "Ref": "HealthyThresholdCount"
+        },
+        "HealthCheckIntervalSeconds": {
+          "Ref": "HealthCheckIntervalSeconds"
+        },
+        "VpcId": {
+          "Ref": "VPCID"
+        },
+        "Protocol": {
+          "Ref": "TargetGroupProtocol"
+        },
+        "Name": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "TargetGroupName"
+              },
+              {
+                "Fn::If": [
+                  "UseTGNameVersion",
+                  {
+                    "Ref": "TargetGroupNameVersion"
+                  },
+                  {
+                    "Ref": "AWS::NoValue"
+                  }
+                ]
+              }
+            ]
+          ]
+        },
+        "UnhealthyThresholdCount": {
+          "Ref": "UnhealthyThresholdCount"
+        },
+        "Tags": [
+          {
+            "Key": "CloudformationStackName",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${AWS::StackName}TargetGroup"
+            }
+          },
+          {
+            "Key": "ServiceProvider",
+            "Value": "Rackspace"
+          }
+        ],
+        "Matcher": {
+          "HttpCode": {
+            "Ref": "MatcherCode"
+          }
+        },
+        "Targets": [
+          {
+            "Fn::If": [
+              "UseTarget1",
+              {
+                "Id": {
+                  "Ref": "TargetGroupTargetId1"
+                },
+                "Port": {
+                  "Ref": "TargetGroupTargetPort1"
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "UseTarget2",
+              {
+                "Id": {
+                  "Ref": "TargetGroupTargetId2"
+                },
+                "Port": {
+                  "Ref": "TargetGroupTargetPort2"
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "UseTarget3",
+              {
+                "Id": {
+                  "Ref": "TargetGroupTargetId3"
+                },
+                "Port": {
+                  "Ref": "TargetGroupTargetPort3"
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "HealthCheckPath": {
+          "Ref": "HealthCheckPath"
+        },
+        "HealthCheckTimeoutSeconds": {
+          "Ref": "HealthCheckTimeoutSeconds"
+        },
+        "TargetGroupAttributes": [
+          {
+            "Value": "lb_cookie",
+            "Key": "stickiness.type"
+          },
+          {
+            "Value": {
+              "Ref": "CookieDuration"
+            },
+            "Key": "stickiness.lb_cookie.duration_seconds"
+          },
+          {
+            "Value": {
+              "Ref": "AttributeStickinessEnabled"
+            },
+            "Key": "stickiness.enabled"
+          },
+          {
+            "Value": {
+              "Ref": "AttributeDelayTimeout"
+            },
+            "Key": "deregistration_delay.timeout_seconds"
+          }
+        ],
+        "HealthCheckProtocol": {
+          "Ref": "HealthCheckProtocol"
+        },
+        "HealthCheckPort": {
+          "Ref": "HealthCheckPort"
+        },
+        "Port": {
+          "Ref": "TargetGroupPort"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "UnHealthyHostCountAlarm": {
+      "Description": "UnHealthy Host Count Alarm Name.",
+      "Value": {
+        "Ref": "UnHealthyHostCountAlarm"
+      }
+    },
+    "ELBv2TargetGroupName": {
+      "Description": "Target Group name.",
+      "Value": {
+        "Fn::GetAtt": [
+          "TargetGroup",
+          "TargetGroupName"
+        ]
+      }
+    },
+    "ELBv2TargetGroup": {
+      "Description": "Target Group ARN for EC2 Instance deployments.",
+      "Value": {
+        "Ref": "TargetGroup"
+      }
+    }
+  }
+}
